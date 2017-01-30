@@ -1,6 +1,6 @@
 # Open Data Notebooks 2017-01 :: ODN2017-01
 ## Case Study: Traffic Accidents in Belgrade 2015.
-#### Data Set: [OPENDATA_SNEZGODE_exc.csv](http://podaci.tech/s/resources/podaci-o-saobracajnim-nezgodama-za-2015-za-teritoriju-grada-beograda/20161220-105618/OPENDATA_SNEZGODE_exc.csv)
+#### Data Set: OPENDATA_SNEZGODE_exc.csv
 #### Source: [data.gov.rs](http://data.gov.rs)
 #### Description: Traffic Accidents in Belgrade, 2015.
 
@@ -13,6 +13,15 @@
 
 ![](../img/DataScienceSerbia_Logo.png)
 
+***
+
+This notebook accompanied the first [Open Data R Meetup](https://www.meetup.com/BelgradeR/events/237202071/) in Belgrade, organized by [Data Science Serbia](http//www.datascience.rs) in [Startit Center](http://en.startit.rs/), Savska 5, Belgrade, 01/30/2017. The event took place to introduce the Data Science community in Serbia with the Open Data initative people, and celebrate the completion of the 2nd [Introduction to R for Data Science](https://github.com/GoranMilovanovic/Introduction-to-R-for-Data-Science) course that Data Science Serbia has provided in Startit, Belgrade. As of now, more than 45 people have learned - or are currently learning - to code in R for free, thanks to our efforts to develop the Introduction to R for Data Science course.
+
+The notebook focuses on an exploratory analysis of the test open data set of Traffic Accidents in Belgrade in 2015, provided at the [Open Data Portal of the Republic of Serbia](http://data.gov.rs/sr/) *that is currently under development*. The data set was kindly provided to the Open Data Portal by the [Republic of Serbia Ministry of Interior](http://mup.gov.rs/wps/portal/en/!ut/p/z1/04_Sj9CPykssy0xPLMnMz0vMAfIjo8zi_S19zQzdDYy83c1cjQwcA80tXbxdLYwtPAz0wwkpiAJKG-AAjiD9UYSUFORGGKQ7KioCADcc2vk!/dz/d5/L0lJSkovd0RNQUJrQUVnQSEhLzRObEhVeEEhL1o2X085TTYxRzAySzhHSUUwQTY3R0pHR04yT00zL2Vu/). Many more open data sets will be indexed and uploaded in the forthcoming weeks and months. 
+
+Besides focusing on the exploration and visualization of this test data set, we demonstrate the basic usage of [{weatherData}](https://cran.r-project.org/web/packages/weatherData/index.html) to fetch historical weather data to R, [{wbstats}](https://cran.r-project.org/web/packages/wbstats/index.html) to access the rich [World Data Bank](http://databank.worldbank.org/data/home.aspx) time series, and [{ISOcodes}](https://cran.r-project.org/web/packages/ISOcodes/) packages in R.
+
+Some exploratory modeling (Negative Binomial Regression with `glm.nb()` and Ordinal Logistic Regression with `clm()` from [{ordinal}](https://cran.r-project.org/web/packages/ordinal/index.html)) is exercised merely to assess the *prima facie* effects of the most influential factors.
 
 ***
 
@@ -34,8 +43,7 @@ wDir <- '../TrafficAccidentsBGD2015'
 setwd(wDir)
 
 ### --- Load Raw Data Set
-fileLoc <- 
-  'http://podaci.tech/s/resources/podaci-o-saobracajnim-nezgodama-za-2015-za-teritoriju-grada-beograda/20161220-105618/OPENDATA_SNEZGODE_exc.csv'
+fileLoc <- 'OPENDATA_SNEZGODE exc.csv'
 rawData <- read.csv(fileLoc,
                     header = T,
                     check.names = F,
@@ -986,15 +994,6 @@ pAirFatal
 print(paste0("Percent Fatal: ", pAirFatal*100))
 ```
 
-*Compare*: what is the ratio of (a) the probability that **a traffic accident in Belgrade** had a fatal outcome to (b) the probability that an **airliner accident** had a fatal outcome 2015?
-
-**N.B.** We are comparing two conditional probabilities here, $P(Fatal|Road Accident)$ against $P(Fatal|Airliner Accident)$; the later conditional probability is estimated from a global pool of relevant events, while the former is estimated from local (Belgrade) data only. 
-
-**N.B.** Take into your consideration the following constraints: (1) we don't have any data for December 2015 traffic accidents in Belgrade; (2) the estimates of the number of airliner accidents (fatal vs. non-fatal) vary depending on the data source (these differences are - most probably - of a methodological nature, i.e. varying upon a particular definition of an "airliner accident"):
-
-``` {r echo = T}
-pDeath/pAirFatal
-```
 
 *** 
 
