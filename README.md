@@ -1,5 +1,6 @@
 # OpenDataR
 Open Data R Notebooks
+![](img/openData_TA_BGD01.png)
 
 R notebooks for use cases of http://data.gov.rs open data sets go here.
 
