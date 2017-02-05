@@ -14,7 +14,7 @@
 #' 
 #' **Author:** [Goran S. Milovanovic](http//www.exactness.net), [Data Science Serbia](http//www.datascience.rs)
 #' 
-#' **Notebook:** 01/30/2017, Belgrade, Serbia
+#' **Notebook:** 02/05/2017, Belgrade, Serbia
 #' 
 #' ![](../img/DataScienceSerbia_Logo.png)
 #' 
@@ -571,7 +571,7 @@ write.csv(rawData, file = "Complaints_FreedomOfInformation.csv")
 #' 
 #' *** 
 #' 
-#' [Goran S. Milovanovic](http//www.exactness.net), [Data Science Serbia](http//www.datascience.rs), 01/24/2017, Belgrade, Serbia
+#' [Goran S. Milovanovic](http//www.exactness.net), [Data Science Serbia](http//www.datascience.rs), 02/05/2017, Belgrade, Serbia
 #' 
 #' ![](../img/DataScienceSerbia_Logo.png)
 #' 
