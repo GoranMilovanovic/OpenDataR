@@ -564,6 +564,13 @@ Drop auxiliary columns:
 rawData[c('CreateDateGroup', 'DecisionDateGroup', 'OutcomeDateGroup')] <- NULL
 ```
 
+Final check for missing values: are there any rows with information completelly missing?
+
+``` {r echo = T}
+w <- which(rowSums(is.na(rawData)) == dim(rawData)[2])
+w
+```
+
 Save the working data set:
 
 ``` {r echo =  T}

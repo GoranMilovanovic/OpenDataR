@@ -1001,6 +1001,10 @@ rawData[w1, ]</code></pre>
 <pre class="r"><code>rawData &lt;- rawData[-w1, ]</code></pre>
 <p>Drop auxiliary columns:</p>
 <pre class="r"><code>rawData[c('CreateDateGroup', 'DecisionDateGroup', 'OutcomeDateGroup')] &lt;- NULL</code></pre>
+<p>Final check for missing values: are there any rows with information completelly missing?</p>
+<pre class="r"><code>w &lt;- which(rowSums(is.na(rawData)) == dim(rawData)[2])
+w</code></pre>
+<pre><code>## named integer(0)</code></pre>
 <p>Save the working data set:</p>
 <pre class="r"><code>write.csv(rawData, file = &quot;Complaints_FreedomOfInformation.csv&quot;)</code></pre>
 <hr />
