@@ -9,8 +9,8 @@ Logic: each folder in this repo = one open data set + its study (Rmd, R, HTML fi
 
 Content:
 
-1. TrafficAccidentsBGD2015 - notebook ODN2017-021, Case Study: Traffic Accidents in Belgrade 2015.
-2. ComInfoPublicImportance - notebooks ODN2017-02A and ODN2017-02B, Case Study: Commissioner for Information of Public Importance and Personal Data Protection, Republic of Serbia: "Complaints in The Field of Freedom of Information" Data Set 
+1. **TrafficAccidentsBGD2015** - notebook ODN2017-021, Case Study: Traffic Accidents in Belgrade 2015.
+2. **ComInfoPublicImportance** - notebooks ODN2017-02A and ODN2017-02B, Case Study: Commissioner for Information of Public Importance and Personal Data Protection, Republic of Serbia: "Complaints in The Field of Freedom of Information" Data Set 
 
 Log:
 
