@@ -165,7 +165,11 @@ unique(sort(rawData$ApplicantCity))
 Some complaints originate from foreign countries (e.g. `Zagreb, Hrvatska`, `Švedska`, `Sidnej`, `Kanada`, `Velika Britanija`, `Švajcarska`, `Beč, Austrija`, `Kopenhagen, Danska`, `Hrvatska`, etc.). Also, some entries are really duplicates as a consequence of presence of Serbian language-specific characters (e.g. `Aranđelovac` and `Arandjelovac`). We will attempt to organize the information from the `ApplicantCity` column in the following way:
 
 + determine whether the `ApplicantCity` is in Serbia or not; introduce a new `logical` column `ApplicantCityForeign` (`TRUE` for cities outside of Serbia, `FALSE` otherwise);
+<<<<<<< HEAD
 + determine whether the entry in the `ApplicantCity` column contains (a) only the name of applicant's city, or (b) a combination of city and country names (e.g. `Beč, Austrija`); introduce a new column `ApplicantCityOnly` as `character` where `City` stands for city only information, `CountryAndCity` for a combination of city and country name, and `Country` for the presence of a country name only.
+=======
++ determine whether the entry in the `ApplicantCity` column contains (a) only the name of applicant's city, or (b) a combination of city and country names (e.g. `Beč, Austrija`); introduce a new column `ApplicantCityOnly` as `character` where `City` stands for city only information, `CountryAndCity` for a combination of city and country name, and `Country` the presence of a country name only.
+>>>>>>> a42fa780ba7264fde1978df586716723a7fb8500
 
 These tasks will be carried out manually, by inspecting all distinct row entries in the `ApplicantCity` column one by one. One assumption can be made: where `,` is present in the `ApplicantCity` column, it most probably separates a city and a country name, indicating `TRUE` in the `ApplicantCityForeign` column and `FALSE` in the `ApplicantCityOnly` column.
 
