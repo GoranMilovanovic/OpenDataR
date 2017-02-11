@@ -150,7 +150,7 @@ $(document).ready(function () {
 </div>
 <hr />
 <p>The notebook focuses on an exploratory analysis of the open data set on the <em>Complaints in the field of freedom of information</em>, provided at the <a href="http://data.gov.rs/sr/">Open Data Portal of the Republic of Serbia</a> <em>that is currently under development</em>. The data set was kindly provided to the Open Data Portal by the <a href="http://www.poverenik.rs/en.html">Commissioner for Information of Public Importance and Personal Data Protection</a> of the Republic of Serbia. Many more open data sets will be indexed and uploaded to the <a href="http://data.gov.rs/sr/">Open Data Portal of the Republic of Serbia</a> in the forthcoming weeks and months.</p>
-<p>As of the data set: (a) no metadata were provided; (b) the translation of legal terms from Serbian to English is mine, meaning: a lot of Google Translate suggestions were used (I’m a psychologists, not a lawyer); (c) mixture of latin and cyrilic alphabet was detected in the data; (d) thorough cleaning takes place here, in Part A; exploratory analysis + data visualizations will be presented soon (Part B).</p>
+<p>As of the data set: (a) no metadata were provided; (b) the translation of legal terms from Serbian to English is mine, meaning: a lot of Google Translate suggestions were used (I’m a psychologists, not a lawyer or a legal expert); (c) mixture of latin and cyrilic alphabet was detected in the data; (d) thorough cleaning takes place here, in Part A; exploratory analysis + data visualizations will be presented soon (Part B).</p>
 <hr />
 <p><strong>Disclaimer.</strong> The <a href="http://data.gov.rs/sr/">Open Data Portal of the Republic of Serbia</a> is a young initiative that is currently under development. Neither the owner of this GitHub account as an individual, or <a href="http//www.datascience.rs">Data Science Serbia</a> as an organization, hold any responsibility for the changes in the URLs of the data sets, or the changes in the content of the data sets published on the <a href="http://data.gov.rs/sr/">Open Data Portal of the Republic of Serbia</a>. The results of the exploratory analyses and statistical models that are presented on this GitHub account are developed for illustrative purposes only, having in mind the goal of popularization of Open Data exclusively. The owner of this GitHub account strongly advises to consult him (e-mail: <a href="mailto:goran.s.milovanovic@gmail.com">goran.s.milovanovic@gmail.com</a> and <a href="http//www.datascience.rs">Data Science Serbia</a> before using the results presented here in public debate or media, and/or for any purposes other than motivating the usage and development of Open Data.</p>
 <hr />
@@ -180,7 +180,7 @@ rawData &lt;- read.table(fileLoc,
 ### --- Inspect Data Set
 dim(rawData)</code></pre>
 <pre><code>## [1] 27518    16</code></pre>
-<p>Take a sneak peek at the data set:</p>
+<p>There are 27518 row entires and 16 variables; Take a sneak peek at the data set:</p>
 <pre class="r"><code>glimpse(rawData)</code></pre>
 <pre><code>## Observations: 27,518
 ## Variables: 16
@@ -203,9 +203,10 @@ dim(rawData)</code></pre>
 </div>
 <div id="recoding-translate-to-english-and-check-for-consistency" class="section level3">
 <h3>Recoding: translate to English and check for consistency</h3>
+<p>The <code>Code</code> column is most probably the unique ID of the complaint; check for consistency:</p>
 <pre class="r"><code>sum(duplicated(rawData$Code))</code></pre>
 <pre><code>## [1] 23</code></pre>
-<p>There are 23 duplicated Code values (complaint IDs, presumeably); checking it out:</p>
+<p>There are 23 duplicated <code>Code</code> values (complaint IDs, presumeably); checking it out:</p>
 <pre class="r"><code>duplicatedCodes &lt;- rawData$Code[which(duplicated(rawData$Code))]
 duplicatedCodes</code></pre>
 <pre><code>##  [1] &quot;07-00-02845/2016-03&quot; &quot;07-00-02806/2016-03&quot; &quot;07-00-02790/2016-03&quot;
@@ -243,6 +244,7 @@ inspectDuplicates$ArticalStatus</code></pre>
 <pre class="r"><code>rawData &lt;- rawData[-which(rawData$Code %in% duplicatedCodes), ]
 dim(rawData)</code></pre>
 <pre><code>## [1] 27472    16</code></pre>
+<p>We are now left with 27472 row entries in the table.</p>
 <pre class="r"><code>table(rawData$ArticalType)</code></pre>
 <pre><code>## 
 ## Žalba 
@@ -333,7 +335,326 @@ dim(rawData)</code></pre>
 sum(is.na(rawData$ApplicantCity))</code></pre>
 <pre><code>## [1] 13</code></pre>
 <p>Fix city names in <code>ApplicantCity</code>:</p>
-<pre class="r"><code>rawData$ApplicantCity &lt;- str_to_title(rawData$ApplicantCity)</code></pre>
+<pre class="r"><code>rawData$ApplicantCity &lt;- str_to_title(rawData$ApplicantCity)
+unique(sort(rawData$ApplicantCity))</code></pre>
+<pre><code>##   [1] &quot;Ada&quot;                         &quot;Aleksandrovac&quot;              
+##   [3] &quot;Aleksinac&quot;                   &quot;Alibunar&quot;                   
+##   [5] &quot;Apatin&quot;                      &quot;Aradac&quot;                     
+##   [7] &quot;Aranđelovac&quot;                 &quot;Arandjеlovac&quot;               
+##   [9] &quot;Arilje&quot;                      &quot;Ariljе&quot;                     
+##  [11] &quot;Azbresnica&quot;                  &quot;Babušnica&quot;                  
+##  [13] &quot;Bač&quot;                         &quot;Baćevac&quot;                    
+##  [15] &quot;Bačka Palanka&quot;               &quot;Bačka Topola&quot;               
+##  [17] &quot;Bački Jarak&quot;                 &quot;Bački Petrovac&quot;             
+##  [19] &quot;Bački  Pеtrovac&quot;             &quot;Bačko Dobro Polje&quot;          
+##  [21] &quot;Bačko Gradište&quot;              &quot;Bačko Petrovo Selo&quot;         
+##  [23] &quot;Bajina Bašta&quot;                &quot;Bajmok&quot;                     
+##  [25] &quot;Bajmok &quot;                     &quot;Banarski Dvor&quot;              
+##  [27] &quot;Banatski Brestovac&quot;          &quot;Banatski Despotovac&quot;        
+##  [29] &quot;Banatski Dvor&quot;               &quot;Banatski Karlovac&quot;          
+##  [31] &quot;Banatsko Novo Selo&quot;          &quot;Banja Koviljača&quot;            
+##  [33] &quot;Banja Luka&quot;                  &quot;Banmaski Karlovac&quot;          
+##  [35] &quot;Banoštor&quot;                    &quot;Banovci&quot;                    
+##  [37] &quot;Bar&quot;                         &quot;Barajevo&quot;                   
+##  [39] &quot;Baranda&quot;                     &quot;Barbatovac&quot;                 
+##  [41] &quot;Barič&quot;                       &quot;Bašaid&quot;                     
+##  [43] &quot;Batajnica&quot;                   &quot;Batočina&quot;                   
+##  [45] &quot;Bavanište&quot;                   &quot;Beč&quot;                        
+##  [47] &quot;Beč Austrija&quot;                &quot;Beč, Austrija&quot;              
+##  [49] &quot;Bečej&quot;                       &quot;Bečmen&quot;                     
+##  [51] &quot;Begaljica&quot;                   &quot;Begeč&quot;                      
+##  [53] &quot;Bela Crkva&quot;                  &quot;Belanovica&quot;                 
+##  [55] &quot;Bela Palanka&quot;                &quot;Belica&quot;                     
+##  [57] &quot;Beli Potok&quot;                  &quot;Beloljin&quot;                   
+##  [59] &quot;Belotinac&quot;                   &quot;Beočin&quot;                     
+##  [61] &quot;Beograd&quot;                     &quot;Bešenovo&quot;                   
+##  [63] &quot;Beška&quot;                       &quot;Bigrenica&quot;                  
+##  [65] &quot;Blace&quot;                       &quot;Bogatić&quot;                    
+##  [67] &quot;Bogdanje&quot;                    &quot;Bogoštica&quot;                  
+##  [69] &quot;Bojnik&quot;                      &quot;Boleč&quot;                      
+##  [71] &quot;Boljevac&quot;                    &quot;Boljevci&quot;                   
+##  [73] &quot;Bon, Nemačka&quot;                &quot;Bor&quot;                        
+##  [75] &quot;Borci&quot;                       &quot;Bosilegrad&quot;                 
+##  [77] &quot;Bosna I Hercegovina&quot;         &quot;Bošnjace&quot;                   
+##  [79] &quot;Bošnjane&quot;                    &quot;Braničevo&quot;                  
+##  [81] &quot;Brankovina&quot;                  &quot;Brazil&quot;                     
+##  [83] &quot;Brčko&quot;                       &quot;Brčko, Bih&quot;                 
+##  [85] &quot;Brdarica&quot;                    &quot;Brdjani&quot;                    
+##  [87] &quot;Bresnica - Čačak&quot;            &quot;Brezjak&quot;                    
+##  [89] &quot;Brgule&quot;                      &quot;Britanska Devičanska Ostrva&quot;
+##  [91] &quot;Brodarevo&quot;                   &quot;Brus&quot;                       
+##  [93] &quot;Brzan&quot;                       &quot;Brza Palanka&quot;               
+##  [95] &quot;Budimpešta&quot;                  &quot;Budimpešta, Mađarska&quot;       
+##  [97] &quot;Budisava&quot;                    &quot;Bujanovac&quot;                  
+##  [99] &quot;Bukovac&quot;                     &quot;Čačak&quot;                      
+## [101] &quot;Čajetina&quot;                    &quot;Čajеtina&quot;                   
+## [103] &quot;Čelarevo&quot;                    &quot;Čenej&quot;                      
+## [105] &quot;Čenta&quot;                       &quot;Ćićevac&quot;                    
+## [107] &quot;Ćićеvac&quot;                     &quot;Crepaja&quot;                    
+## [109] &quot;Crna Trava&quot;                  &quot;Crvena Reka&quot;                
+## [111] &quot;Crvenka&quot;                     &quot;Čukojevac&quot;                  
+## [113] &quot;Čumić&quot;                       &quot;Ćuprija&quot;                    
+## [115] &quot;Čurug&quot;                       &quot;Đakovica&quot;                   
+## [117] &quot;Debeljača&quot;                   &quot;Debrc&quot;                      
+## [119] &quot;Deonica&quot;                     &quot;Desimirovac&quot;                
+## [121] &quot;Despotovac&quot;                  &quot;Dimitrovgrad&quot;               
+## [123] &quot;Divci&quot;                       &quot;Divoš&quot;                      
+## [125] &quot;Dobra Voda&quot;                  &quot;Doljevac&quot;                   
+## [127] &quot;Dolovo&quot;                      &quot;Donja Gušterica&quot;            
+## [129] &quot;Donja Livadica&quot;              &quot;Donje Crniljevo&quot;            
+## [131] &quot;Donje Međurovo&quot;              &quot;Donje Vlase&quot;                
+## [133] &quot;Donji Dušnik&quot;                &quot;Donji Milanovac&quot;            
+## [135] &quot;Doroslovo&quot;                   &quot;Drmno&quot;                      
+## [137] &quot;Dubovac&quot;                     &quot;Dudovica&quot;                   
+## [139] &quot;Đurinci&quot;                     &quot;Ečka&quot;                       
+## [141] &quot;Elemir&quot;                      &quot;Erdevik&quot;                    
+## [143] &quot;Feketić&quot;                     &quot;Florida&quot;                    
+## [145] &quot;Florida Usa&quot;                 &quot;Futog&quot;                      
+## [147] &quot;Gadžin Han&quot;                  &quot;Gložan&quot;                     
+## [149] &quot;Glušci&quot;                      &quot;Golobok&quot;                    
+## [151] &quot;Golubac&quot;                     &quot;Goračići&quot;                   
+## [153] &quot;Goraždevac&quot;                  &quot;Gornij Milanovac&quot;           
+## [155] &quot;Gornja Draguša&quot;              &quot;Gornja Toponica&quot;            
+## [157] &quot;Gornji Milanovac&quot;            &quot;Grabovac&quot;                   
+## [159] &quot;Grabovica&quot;                   &quot;Gračac&quot;                     
+## [161] &quot;Gračanica&quot;                   &quot;Grdelica&quot;                   
+## [163] &quot;Grljan&quot;                      &quot;Grocka&quot;                     
+## [165] &quot;Guberevac&quot;                   &quot;Hajdučica&quot;                  
+## [167] &quot;Helzinburg, Švedska&quot;         &quot;Herceg Novi&quot;                
+## [169] &quot;Hrvatska&quot;                    &quot;Inđija&quot;                     
+## [171] &quot;Irig&quot;                        &quot;Istok&quot;                      
+## [173] &quot;Ivanjica&quot;                    &quot;Izvarica&quot;                   
+## [175] &quot;Jabuka&quot;                      &quot;Jagodina&quot;                   
+## [177] &quot;Jajinci&quot;                     &quot;Jakovo&quot;                     
+## [179] &quot;Jaša Tomić&quot;                  &quot;Jelašnica&quot;                  
+## [181] &quot;Jelen Do&quot;                    &quot;Jovanovac&quot;                  
+## [183] &quot;Kać&quot;                         &quot;Kačarevo&quot;                   
+## [185] &quot;Kaluđerica&quot;                  &quot;Kamenovo&quot;                   
+## [187] &quot;Kanada&quot;                      &quot;Kanjiža&quot;                    
+## [189] &quot;Karađorđevo&quot;                 &quot;Karavukovo&quot;                 
+## [191] &quot;Katun&quot;                       &quot;Kikinda&quot;                    
+## [193] &quot;Kisač&quot;                       &quot;Kladovo&quot;                    
+## [195] &quot;Klek&quot;                        &quot;Kličevac&quot;                   
+## [197] &quot;Klina&quot;                       &quot;Kljajićevo&quot;                 
+## [199] &quot;Knić&quot;                        &quot;Knjaževac&quot;                  
+## [201] &quot;Knjažеvac&quot;                   &quot;Koceljeva&quot;                  
+## [203] &quot;Končarevo&quot;                   &quot;Konjuh&quot;                     
+## [205] &quot;Kopenhagen, Danska&quot;          &quot;Koraćica&quot;                   
+## [207] &quot;Korman&quot;                      &quot;Kosjerić&quot;                   
+## [209] &quot;Kosovska Kamenica&quot;           &quot;Kosovska Mitrovica&quot;         
+## [211] &quot;Kosovska Vitina&quot;             &quot;Kostolac&quot;                   
+## [213] &quot;Kotor&quot;                       &quot;Kovačevac&quot;                  
+## [215] &quot;Kovačica&quot;                    &quot;Kovilj&quot;                     
+## [217] &quot;Kovin&quot;                       &quot;Kozluk, Republika Srpska&quot;   
+## [219] &quot;Kragujevac&quot;                  &quot;Kragujеvac&quot;                 
+## [221] &quot;Krajkovac&quot;                   &quot;Kraljevo&quot;                   
+## [223] &quot;Krupanj&quot;                     &quot;Kruščić&quot;                    
+## [225] &quot;Kruševac&quot;                    &quot;Kučevo&quot;                     
+## [227] &quot;Kukljin&quot;                     &quot;Kula&quot;                       
+## [229] &quot;Kulpin&quot;                      &quot;Kurjače&quot;                    
+## [231] &quot;Kuršumlija&quot;                  &quot;Kušiljevo&quot;                  
+## [233] &quot;Kuzmin&quot;                      &quot;Laćarak&quot;                    
+## [235] &quot;Lađevci&quot;                     &quot;Lajkovac&quot;                   
+## [237] &quot;Laplje Selo&quot;                 &quot;Lapovo&quot;                     
+## [239] &quot;Lazarevac&quot;                   &quot;Lazarevo&quot;                   
+## [241] &quot;Lebane&quot;                      &quot;Lebanе&quot;                     
+## [243] &quot;Ledinci&quot;                     &quot;Lepenac&quot;                    
+## [245] &quot;Leposavić&quot;                   &quot;Leskovac&quot;                   
+## [247] &quot;Lešnica&quot;                     &quot;Lipar&quot;                      
+## [249] &quot;Lješnica&quot;                    &quot;Ljig&quot;                       
+## [251] &quot;Ljubljana&quot;                   &quot;Ljubljana, Slovenija&quot;       
+## [253] &quot;Ljubovija&quot;                   &quot;Ljukovo&quot;                    
+## [255] &quot;Lok&quot;                         &quot;Lovćenac&quot;                   
+## [257] &quot;Loznica&quot;                     &quot;Lozovik&quot;                    
+## [259] &quot;Lučani&quot;                      &quot;Mačvanska Mitrovica&quot;        
+## [261] &quot;Majdanpek&quot;                   &quot;Majdanpеk&quot;                  
+## [263] &quot;Majur&quot;                       &quot;Makedonija&quot;                 
+## [265] &quot;Mala Moštanica&quot;              &quot;Malča&quot;                      
+## [267] &quot;Mali Iđoš&quot;                   &quot;Mali Izvor&quot;                 
+## [269] &quot;Mali Mokri Lug&quot;              &quot;Mali Zvornik&quot;               
+## [271] &quot;Manđelos&quot;                    &quot;Mataruška Banja&quot;            
+## [273] &quot;Međa&quot;                        &quot;Medveđa&quot;                    
+## [275] &quot;Melburn, Australija&quot;         &quot;Melenci&quot;                    
+## [277] &quot;Merošina&quot;                    &quot;Metlić&quot;                     
+## [279] &quot;Mihajlovac&quot;                  &quot;Mijatovac&quot;                  
+## [281] &quot;Miletićevo&quot;                  &quot;Miličinica&quot;                 
+## [283] &quot;Miloševac&quot;                   &quot;Mionica&quot;                    
+## [285] &quot;Mladenovac&quot;                  &quot;Mladenovo&quot;                  
+## [287] &quot;Mladеnovac&quot;                  &quot;Mokra Gora&quot;                 
+## [289] &quot;Mokrin&quot;                      &quot;Mol&quot;                        
+## [291] &quot;Mostar&quot;                      &quot;Mramor&quot;                     
+## [293] &quot;Mramorak&quot;                    &quot;Mršinci&quot;                    
+## [295] &quot;Mujević&quot;                     &quot;Mužlja&quot;                     
+## [297] &quot;Nadalj&quot;                      &quot;Negotin&quot;                    
+## [299] &quot;Nemačka&quot;                     &quot;Nemačka, Bon&quot;               
+## [301] &quot;Nikinci&quot;                     &quot;Niš&quot;                        
+## [303] &quot;Niška Banja&quot;                 &quot;No Data&quot;                    
+## [305] &quot;Nova Crnja&quot;                  &quot;Nova Pazova&quot;                
+## [307] &quot;Nova Varoš&quot;                  &quot;Novi Banovci&quot;               
+## [309] &quot;Novi Banovic&quot;                &quot;Novi Bečej&quot;                 
+## [311] &quot;Novi Bеčеj&quot;                  &quot;Novi Kneževac&quot;              
+## [313] &quot;Novi Knеžеvac&quot;               &quot;Novi Ledinci&quot;               
+## [315] &quot;Novi Pazar&quot;                  &quot;Novi Sad&quot;                   
+## [317] &quot;Novi Sip&quot;                    &quot;Novi Slankamen&quot;             
+## [319] &quot;Novo Orahovo&quot;                &quot;Novo Selo&quot;                  
+## [321] &quot;Obrenovac&quot;                   &quot;Obrež&quot;                      
+## [323] &quot;Odžaci&quot;                      &quot;Odžak&quot;                      
+## [325] &quot;Opovo&quot;                       &quot;Orane&quot;                      
+## [327] &quot;Orljane&quot;                     &quot;Osečina&quot;                    
+## [329] &quot;Osipaonica&quot;                  &quot;Osеčina&quot;                    
+## [331] &quot;Padina&quot;                      &quot;Padinska Skela&quot;             
+## [333] &quot;Palić&quot;                       &quot;Pančevo&quot;                    
+## [335] &quot;Pančеvo&quot;                     &quot;Paraćin&quot;                    
+## [337] &quot;Pasjača&quot;                     &quot;Peć&quot;                        
+## [339] &quot;Pećinci&quot;                     &quot;Perućac&quot;                    
+## [341] &quot;Petrat&quot;                      &quot;Petrovac&quot;                   
+## [343] &quot;Petrovac Na Mlavi&quot;           &quot;Petrovaradin&quot;               
+## [345] &quot;Petrovčić&quot;                   &quot;Pirot&quot;                      
+## [347] &quot;Plandište&quot;                   &quot;Plandištе&quot;                  
+## [349] &quot;Plavna&quot;                      &quot;Pločnik&quot;                    
+## [351] &quot;Podgorica&quot;                   &quot;Podgorica, Crna Gora&quot;       
+## [353] &quot;Podunavci&quot;                   &quot;Podvrška&quot;                   
+## [355] &quot;Polimlje&quot;                    &quot;Poljska&quot;                    
+## [357] &quot;Popovac&quot;                     &quot;Požarevac&quot;                  
+## [359] &quot;Požarеvac&quot;                   &quot;Požega&quot;                     
+## [361] &quot;Preljina&quot;                    &quot;Preševo&quot;                    
+## [363] &quot;Priboj&quot;                      &quot;Prigrevica&quot;                 
+## [365] &quot;Prijepolje&quot;                  &quot;Prijеpoljе&quot;                 
+## [367] &quot;Priština&quot;                    &quot;Prizren&quot;                    
+## [369] &quot;Prokuplje&quot;                   &quot;Prokupljе&quot;                  
+## [371] &quot;Provo&quot;                       &quot;Pudarci&quot;                    
+## [373] &quot;Pula&quot;                        &quot;Rača&quot;                       
+## [375] &quot;Radičević&quot;                   &quot;Radinac&quot;                    
+## [377] &quot;Rakovac&quot;                     &quot;Ralja&quot;                      
+## [379] &quot;Ranilug&quot;                     &quot;Ranovac&quot;                    
+## [381] &quot;Rašanac&quot;                     &quot;Raška&quot;                      
+## [383] &quot;Ravno Selo&quot;                  &quot;Ražanj&quot;                     
+## [385] &quot;Rekovac&quot;                     &quot;Republika Ekvador&quot;          
+## [387] &quot;Rgotina&quot;                     &quot;Ribare&quot;                     
+## [389] &quot;Ripanj&quot;                      &quot;Ristovac&quot;                   
+## [391] &quot;Ritopek&quot;                     &quot;Rudna Glava&quot;                
+## [393] &quot;Rudnik&quot;                      &quot;Rujevac&quot;                    
+## [395] &quot;Ruma&quot;                        &quot;Rušanj&quot;                     
+## [397] &quot;Šabac&quot;                       &quot;Šajince&quot;                    
+## [399] &quot;Šajkaš&quot;                      &quot;Samoš&quot;                      
+## [401] &quot;Šangaj&quot;                      &quot;Savino Selo&quot;                
+## [403] &quot;Sečanj&quot;                      &quot;Seleuš&quot;                     
+## [405] &quot;Selevac&quot;                     &quot;Senje&quot;                      
+## [407] &quot;Senta&quot;                       &quot;Šetonje&quot;                    
+## [409] &quot;Severovo&quot;                    &quot;Šid&quot;                        
+## [411] &quot;Sidnej&quot;                      &quot;Sijarinska Banja&quot;           
+## [413] &quot;Šimanovci&quot;                   &quot;Šipikovo&quot;                   
+## [415] &quot;Sirča&quot;                       &quot;Sirig&quot;                      
+## [417] &quot;Sivac&quot;                       &quot;Sjenica&quot;                    
+## [419] &quot;Skorenovac&quot;                  &quot;Slanci&quot;                     
+## [421] &quot;Slatina&quot;                     &quot;Slepčević&quot;                  
+## [423] &quot;Šljivovo&quot;                    &quot;Slovenija&quot;                  
+## [425] &quot;Smederevo&quot;                   &quot;Smederevska Palanka&quot;        
+## [427] &quot;Smoljinac&quot;                   &quot;Sokobanja&quot;                  
+## [429] &quot;Sombor&quot;                      &quot;Sopot&quot;                      
+## [431] &quot;Srbobran&quot;                    &quot;Sremčica&quot;                   
+## [433] &quot;Sremska Kamenica&quot;            &quot;Sremska Kamеnica&quot;           
+## [435] &quot;Sremska Mitrovica&quot;           &quot;Sremski Karlovci&quot;           
+## [437] &quot;Sremski Mihaljevci&quot;          &quot;Srpska Crnja&quot;               
+## [439] &quot;Srpski Miletić&quot;              &quot;Stalać&quot;                     
+## [441] &quot;Stara Pazova&quot;                &quot;Starčevo&quot;                   
+## [443] &quot;Stari Banovci&quot;               &quot;Staro Selo&quot;                 
+## [445] &quot;Stepanje&quot;                    &quot;Strasswalcen/Austija&quot;       
+## [447] &quot;Štrpce&quot;                      &quot;Strumica&quot;                   
+## [449] &quot;Štubik&quot;                      &quot;Štulac&quot;                     
+## [451] &quot;Subotica&quot;                    &quot;Surčin&quot;                     
+## [453] &quot;Surdulica&quot;                   &quot;Šušara&quot;                     
+## [455] &quot;Sutjeska&quot;                    &quot;Švajcarska&quot;                 
+## [457] &quot;Švedska&quot;                     &quot;Svilajnac&quot;                  
+## [459] &quot;Svilojevo&quot;                   &quot;Svrljig&quot;                    
+## [461] &quot;Tadenje&quot;                     &quot;Tara&quot;                       
+## [463] &quot;Tekija&quot;                      &quot;Temerin&quot;                    
+## [465] &quot;Titel&quot;                       &quot;Toplička Velika Plana&quot;      
+## [467] &quot;Topola&quot;                      &quot;Topolnica&quot;                  
+## [469] &quot;Topolovnik&quot;                  &quot;Torak&quot;                      
+## [471] &quot;Tovariševo&quot;                  &quot;Trebinje&quot;                   
+## [473] &quot;Trešnjevica&quot;                 &quot;Trgovište&quot;                  
+## [475] &quot;Trnava&quot;                      &quot;Trnavci&quot;                    
+## [477] &quot;Trstenik&quot;                    &quot;Trstеnik&quot;                   
+## [479] &quot;Tulare&quot;                      &quot;Turija&quot;                     
+## [481] &quot;Tutin&quot;                       &quot;Ub&quot;                         
+## [483] &quot;Ugrinovci&quot;                   &quot;Umka&quot;                       
+## [485] &quot;Ušće&quot;                        &quot;Užice&quot;                      
+## [487] &quot;Uzovice&quot;                     &quot;Valjevo&quot;                    
+## [489] &quot;Valjevska Kamenica&quot;          &quot;Varda&quot;                      
+## [491] &quot;Varvarin&quot;                    &quot;Velika Britanija&quot;           
+## [493] &quot;Velika Moštanica&quot;            &quot;Velika Plana&quot;               
+## [495] &quot;Veliki Crljeni&quot;              &quot;Veliko Crniće&quot;              
+## [497] &quot;Veliko Gradište&quot;             &quot;Veliko Gradištе&quot;            
+## [499] &quot;Veternik&quot;                    &quot;Vinča&quot;                      
+## [501] &quot;Višnjićevo&quot;                  &quot;Vitoševac&quot;                  
+## [503] &quot;Vitovnica&quot;                   &quot;Vladičin Han&quot;               
+## [505] &quot;Vladimirci&quot;                  &quot;Vlasotince&quot;                 
+## [507] &quot;Vodice&quot;                      &quot;Volujac&quot;                    
+## [509] &quot;Vranje&quot;                      &quot;Vranjska Banja&quot;             
+## [511] &quot;Vranjske Novine&quot;             &quot;Vranska Banja&quot;              
+## [513] &quot;Vrbac&quot;                       &quot;Vrbas&quot;                      
+## [515] &quot;Vrčin&quot;                       &quot;Vrdink&quot;                     
+## [517] &quot;Vrdnik&quot;                      &quot;Vreoci&quot;                     
+## [519] &quot;Vrhpolje&quot;                    &quot;Vrnjačka Banja&quot;             
+## [521] &quot;Vrsac&quot;                       &quot;Vršac&quot;                      
+## [523] &quot;Vučje&quot;                       &quot;Vukovac&quot;                    
+## [525] &quot;Žabalj&quot;                      &quot;Žabari&quot;                     
+## [527] &quot;Zabela&quot;                      &quot;Zagreb, Hrvatska&quot;           
+## [529] &quot;Žagubica&quot;                    &quot;Zaječar&quot;                    
+## [531] &quot;Zaklopača&quot;                   &quot;Zavlaka&quot;                    
+## [533] &quot;Zemun&quot;                       &quot;Žitište&quot;                    
+## [535] &quot;Žitkovac&quot;                    &quot;Žitkovica&quot;                  
+## [537] &quot;Žitorađa&quot;                    &quot;Zlatibor&quot;                   
+## [539] &quot;Zlot&quot;                        &quot;Zrenjanin&quot;                  
+## [541] &quot;Zubin Potok&quot;                 &quot;Žuč&quot;                        
+## [543] &quot;Zvečan&quot;                      &quot;Zvečka&quot;                     
+## [545] &quot;Zvornik&quot;</code></pre>
+<p>Some complaints originate from foreign countries (e.g. <code>Zagreb, Hrvatska</code>, <code>Švedska</code>, <code>Sidnej</code>, <code>Kanada</code>, <code>Velika Britanija</code>, <code>Švajcarska</code>, <code>Beč, Austrija</code>, <code>Kopenhagen, Danska</code>, <code>Hrvatska</code>, etc.). Also, some entries are really duplicates as a consequence of presence of Serbian language-specific characters (e.g. <code>Aranđelovac</code> and <code>Arandjelovac</code>). We will attempt to organize the information from the <code>ApplicantCity</code> column in the following way:</p>
+<ul>
+<li>determine whether the <code>ApplicantCity</code> is in Serbia or not; introduce a new <code>logical</code> column <code>ApplicantCityForeign</code> (<code>TRUE</code> for cities outside of Serbia, <code>FALSE</code> otherwise);</li>
+<li>determine whether the entry in the <code>ApplicantCity</code> column contains (a) only the name of applicant’s city, or (b) a combination of city and country names (e.g. <code>Beč, Austrija</code>); introduce a new column <code>ApplicantCityOnly</code> as <code>character</code> where <code>City</code> stands for city only information, <code>CountryAndCity</code> for a combination of city and country name, and <code>Country</code> for the presence of a country name only.</li>
+</ul>
+<p>These tasks will be carried out manually, by inspecting all distinct row entries in the <code>ApplicantCity</code> column one by one. One assumption can be made: where <code>,</code> is present in the <code>ApplicantCity</code> column, it most probably separates a city and a country name, indicating <code>TRUE</code> in the <code>ApplicantCityForeign</code> column and <code>FALSE</code> in the <code>ApplicantCityOnly</code> column.</p>
+<pre class="r"><code>commaEntries &lt;- which(grepl(&quot;,&quot;, rawData$ApplicantCity))
+unique(rawData$ApplicantCity[commaEntries])</code></pre>
+<pre><code>##  [1] &quot;Melburn, Australija&quot;      &quot;Zagreb, Hrvatska&quot;        
+##  [3] &quot;Ljubljana, Slovenija&quot;     &quot;Beč, Austrija&quot;           
+##  [5] &quot;Brčko, Bih&quot;               &quot;Budimpešta, Mađarska&quot;    
+##  [7] &quot;Kopenhagen, Danska&quot;       &quot;Bon, Nemačka&quot;            
+##  [9] &quot;Podgorica, Crna Gora&quot;     &quot;Helzinburg, Švedska&quot;     
+## [11] &quot;Nemačka, Bon&quot;             &quot;Kozluk, Republika Srpska&quot;</code></pre>
+<p>All these entries are foreign cities.</p>
+<pre class="r"><code># - fix typos and unsystematic errors:
+rawData$ApplicantCity[which(grepl(&quot;Pančevo|Pančеvo&quot;, rawData$ApplicantCity))] &lt;- &quot;Pančevo&quot;
+rawData$ApplicantCity[which(grepl(&quot;Beč Austrija&quot;, rawData$ApplicantCity, fixed = T))] &lt;- &quot;Beč, Austrija&quot;
+rawData$ApplicantCity[which(grepl(&quot;Bosna I Hercegovina&quot;, rawData$ApplicantCity, fixed = T))] &lt;- &quot;Bosna i Hercegovina&quot;
+rawData$ApplicantCity[which(grepl(&quot;Florida Usa&quot;, rawData$ApplicantCity, fixed = T))] &lt;- &quot;Florida, USA&quot;
+rawData$ApplicantCity[which(grepl(&quot;Strasswalcen/Austija&quot;, rawData$ApplicantCity, fixed = T))] &lt;- &quot;Strasswalcen, Austrija&quot;
+rawData$ApplicantCity[which(grepl(&quot;Gornij Milanovac&quot;, rawData$ApplicantCity, fixed = T))] &lt;- &quot;Gornji Milanovac&quot;
+rawData$ApplicantCity[which(grepl(&quot;Arandjelovac&quot;, rawData$ApplicantCity, fixed = T))] &lt;- &quot;Aranđelovac&quot;
+# - introduce rawData$ApplicantCityOnly and rawData$ApplicantCityForeign fields:
+rawData$ApplicantCityOnly &lt;- rep(&quot;City&quot;, dim(rawData)[1])
+rawData$ApplicantCityOnly[commaEntries] &lt;- 'CountryAndCity'
+countriesFound &lt;- c('Brazil', 'Britanska Devičanska Ostrva', 'Hrvatska', 'Kanada', 'Makedonija', 'Poljska', 'Republika Ekvador', 'Švajcarska', 'Švedska', 'Velika Britanija')
+foreignCitiesFound &lt;- c('Beč', 'Brčko', 'Budimpešta', 'Ljubljana' , 'Mostar', 'Sidnej')
+foreignCities &lt;- unlist(lapply(foreignCitiesFound, function(x) {
+  which(grepl(x, rawData$ApplicantCity, fixed = T))}))
+rawData$ApplicantCityForeign &lt;- rep(F, dim(rawData)[1])
+rawData$ApplicantCityForeign[commaEntries] &lt;- T
+rawData$ApplicantCityForeign[foreignCities] &lt;- T
+foreignCountries &lt;- unlist(lapply(countriesFound, function(x) {
+  which(grepl(x, rawData$ApplicantCity, fixed = T))}))
+rawData$ApplicantCityForeign[foreignCountries] &lt;- T
+rawData$ApplicantCityOnly[foreignCountries] &lt;- 'Country'
+rawData$ApplicantCityOnly[which(grepl(&quot;No Data&quot;, rawData$ApplicantCityOnly))] &lt;- NA
+table(rawData$ApplicantCityOnly, rawData$ApplicantCityForeign)</code></pre>
+<pre><code>##                 
+##                  FALSE  TRUE
+##   City           27247   182
+##   Country            0    21
+##   CountryAndCity     0    22</code></pre>
+<p><strong>Hopefully</strong>, these operations have removed all potential confusions and errors from the <code>ApplicantCity</code> column.</p>
 <pre class="r"><code>table(rawData$ArticalStatus)</code></pre>
 <pre><code>## 
 ##   Активан Архивиран   Завршен 
@@ -515,9 +836,183 @@ percents</code></pre>
 <pre class="r"><code>rawData$AuthorityCity[rawData$AuthorityCity == 'Nepoznat'] &lt;- NA
 sum(is.na(rawData$AuthorityCity))</code></pre>
 <pre><code>## [1] 1</code></pre>
-<p>Fix city names in <code>AuthorityCity</code>:</p>
-<pre class="r"><code>rawData$AuthorityCity &lt;- str_to_title(rawData$AuthorityCity)</code></pre>
-<p>Inspect <code>BasicOfStarting</code>:</p>
+<p>Fix city names in <code>AuthorityCity</code> and check:</p>
+<pre class="r"><code>rawData$AuthorityCity &lt;- str_to_title(rawData$AuthorityCity)
+unique(rawData$AuthorityCity)</code></pre>
+<pre><code>##   [1] &quot;Beograd&quot;                   &quot;Zaječar&quot;                  
+##   [3] &quot;Novi Sad&quot;                  &quot;Vrbas&quot;                    
+##   [5] &quot;Vranje&quot;                    &quot;Smederevo&quot;                
+##   [7] &quot;Kovačica&quot;                  &quot;Leskovac&quot;                 
+##   [9] &quot;Gornji Milanovac&quot;          &quot;Subotica&quot;                 
+##  [11] &quot;Leposavić&quot;                 &quot;Niš&quot;                      
+##  [13] &quot;Sirogojno&quot;                 &quot;Koceljeva&quot;                
+##  [15] &quot;Pirot&quot;                     &quot;Novi Pazar&quot;               
+##  [17] &quot;Jagodina&quot;                  &quot;Negotin&quot;                  
+##  [19] &quot;Bečej&quot;                     &quot;Kosjerić&quot;                 
+##  [21] &quot;Prijepolje&quot;                &quot;Ljig&quot;                     
+##  [23] &quot;Prijеpoljе&quot;                &quot;Pančеvo&quot;                  
+##  [25] &quot;Vrnjačka Banja&quot;            &quot;Knić&quot;                     
+##  [27] &quot;Medveđa&quot;                   &quot;Odžaci&quot;                   
+##  [29] &quot;Sombor&quot;                    &quot;Paraćin&quot;                  
+##  [31] &quot;Požega&quot;                    &quot;Topola&quot;                   
+##  [33] &quot;Šabac&quot;                     &quot;Doljevac&quot;                 
+##  [35] &quot;Majdanpеk&quot;                 &quot;Sremski Karlovci&quot;         
+##  [37] &quot;Zrenjanin&quot;                 &quot;Kraljevo&quot;                 
+##  [39] &quot;Bogatić&quot;                   &quot;Titel&quot;                    
+##  [41] &quot;Bačka Palanka&quot;             &quot;Požarеvac&quot;                
+##  [43] &quot;Šid&quot;                       &quot;Čajеtina&quot;                 
+##  [45] &quot;Lazarevac&quot;                 &quot;Svilajnac&quot;                
+##  [47] &quot;Preševo&quot;                   &quot;Pećinci&quot;                  
+##  [49] &quot;Nova Crnja&quot;                &quot;Mali Iđoš&quot;                
+##  [51] &quot;Loznica&quot;                   &quot;Lebanе&quot;                   
+##  [53] &quot;Kučevo&quot;                    &quot;Kula&quot;                     
+##  [55] &quot;Kikinda&quot;                   &quot;Despotovac&quot;               
+##  [57] &quot;Golubac&quot;                   &quot;Brus&quot;                     
+##  [59] &quot;Bela Crkva&quot;                &quot;Bačka Topola&quot;             
+##  [61] &quot;Bor&quot;                       &quot;Ada&quot;                      
+##  [63] &quot;Žitištе&quot;                   &quot;Bujanovac&quot;                
+##  [65] &quot;Čačak&quot;                     &quot;Temerin&quot;                  
+##  [67] &quot;Donji Milanovac&quot;           &quot;Surdulica&quot;                
+##  [69] &quot;Prokupljе&quot;                 &quot;Krupanj&quot;                  
+##  [71] &quot;Kragujеvac&quot;                &quot;Petrovac Na Mlavi&quot;        
+##  [73] &quot;Valjevo&quot;                   &quot;Aleksandrovac&quot;            
+##  [75] &quot;Varvarin&quot;                  &quot;Sjenica&quot;                  
+##  [77] &quot;Smederevska Palanka&quot;       &quot;Kosovska Mitrovica&quot;       
+##  [79] &quot;Sremska Mitrovica&quot;         &quot;Petrovaradin&quot;             
+##  [81] &quot;Inđija&quot;                    &quot;Knjažеvac&quot;                
+##  [83] &quot;Arandjеlovac&quot;              &quot;Vlasotince&quot;               
+##  [85] &quot;Mionica&quot;                   &quot;Ćuprija&quot;                  
+##  [87] &quot;Zemun&quot;                     &quot;Priboj&quot;                   
+##  [89] &quot;Obrenovac&quot;                 &quot;Ljubovija&quot;                
+##  [91] &quot;Žabari&quot;                    &quot;Ćićеvac&quot;                  
+##  [93] &quot;Sokobanja&quot;                 &quot;Debeljača&quot;                
+##  [95] &quot;Grdelica&quot;                  &quot;Rača&quot;                     
+##  [97] &quot;Vladičin Han&quot;              &quot;Bosilegrad&quot;               
+##  [99] &quot;Batočina&quot;                  &quot;Aleksinac&quot;                
+## [101] &quot;Srbobran&quot;                  &quot;Rekovac&quot;                  
+## [103] &quot;Irig&quot;                      &quot;Kanjiža                  &quot;
+## [105] &quot;Vladimirci&quot;                &quot;Blace&quot;                    
+## [107] &quot;Ivanjica&quot;                  &quot;Merošina&quot;                 
+## [109] &quot;Velika Plana&quot;              &quot;Trgovište&quot;                
+## [111] &quot;Trstеnik&quot;                  &quot;Zvečan&quot;                   
+## [113] &quot;Stara Pazova&quot;              &quot;Bela Palanka&quot;             
+## [115] &quot;Umka&quot;                      &quot;Kruševac&quot;                 
+## [117] &quot;Žabalj&quot;                    &quot;No Data&quot;                  
+## [119] &quot;Nova Varoš&quot;                &quot;Užice&quot;                    
+## [121] &quot;Pambukovica&quot;               &quot;Lapovo&quot;                   
+## [123] &quot;Sečanj&quot;                    &quot;Gadžin Han&quot;               
+## [125] &quot;Tutin&quot;                     &quot;Lučani&quot;                   
+## [127] &quot;Kovin&quot;                     &quot;Raška&quot;                    
+## [129] &quot;Novi Knеžеvac&quot;             &quot;Senta&quot;                    
+## [131] &quot;Bač&quot;                       &quot;Bojnik&quot;                   
+## [133] &quot;Palić&quot;                     &quot;Žagubica&quot;                 
+## [135] &quot;Bački  Pеtrovac&quot;           &quot;Bajina Bašta&quot;             
+## [137] &quot;Osеčina&quot;                   &quot;Ruma&quot;                     
+## [139] &quot;Kostolac&quot;                  &quot;Jabuka&quot;                   
+## [141] &quot;Vršac&quot;                     &quot;Boljevac&quot;                 
+## [143] &quot;Apatin&quot;                    &quot;Kisač&quot;                    
+## [145] &quot;Vrčin&quot;                     &quot;Lajkovac&quot;                 
+## [147] &quot;Crna Trava&quot;                &quot;Svrljig&quot;                  
+## [149] &quot;Štrpce&quot;                    &quot;Vajska&quot;                   
+## [151] &quot;Surčin&quot;                    &quot;Kalna&quot;                    
+## [153] &quot;Prnjavor&quot;                  &quot;Ušće&quot;                     
+## [155] &quot;Mladеnovac&quot;                &quot;Kladovo&quot;                  
+## [157] &quot;Banatsko Novo Selo&quot;        &quot;Kačarevo&quot;                 
+## [159] &quot;Glogonj&quot;                   &quot;Crvenka&quot;                  
+## [161] &quot;Glušci&quot;                    &quot;Vinča&quot;                    
+## [163] &quot;Žitorađa&quot;                  &quot;Gračanica&quot;                
+## [165] &quot;Alibunar&quot;                  &quot;Belušić&quot;                  
+## [167] &quot;Golobok&quot;                   &quot;Ub&quot;                       
+## [169] &quot;Jasenovo&quot;                  &quot;Radoinja&quot;                 
+## [171] &quot;Bistrica&quot;                  &quot;Akmačići&quot;                 
+## [173] &quot;Božetići&quot;                  &quot;Bački Jarak&quot;              
+## [175] &quot;Novi Bеčеj&quot;                &quot;Starčevo&quot;                 
+## [177] &quot;Grljan&quot;                    &quot;Mali Zvornik&quot;             
+## [179] &quot;Jošanička Banja&quot;           &quot;Laznica&quot;                  
+## [181] &quot;Izvor&quot;                     &quot;Urovica&quot;                  
+## [183] &quot;Jabukovac&quot;                 &quot;Smoljinac&quot;                
+## [185] &quot;Krepoljin&quot;                 &quot;Melnica&quot;                  
+## [187] &quot;Majilovac&quot;                 &quot;Rašanac&quot;                  
+## [189] &quot;Zlot&quot;                      &quot;Dušanovac&quot;                
+## [191] &quot;Kobišnica&quot;                 &quot;Rudna Glava&quot;              
+## [193] &quot;Osipaonica&quot;                &quot;Brodarevo&quot;                
+## [195] &quot;Sremska Kamеnica&quot;          &quot;Zvornik&quot;                  
+## [197] &quot;Malo Crnićе&quot;               &quot;Veliko Gradištе&quot;          
+## [199] &quot;Topolovnik&quot;                &quot;Šajkaš&quot;                   
+## [201] &quot;Topolnica&quot;                 &quot;Natalinci&quot;                
+## [203] &quot;Čelarevo&quot;                  &quot;Kuršumlija&quot;               
+## [205] &quot;Beočin&quot;                    &quot;Kurjače&quot;                  
+## [207] &quot;Ravno Selo&quot;                &quot;Tovariševo&quot;               
+## [209] &quot;Babušnica&quot;                 &quot;Sutjeska&quot;                 
+## [211] &quot;Zlatibor&quot;                  &quot;Novi Banovci&quot;             
+## [213] &quot;Dimitrovgrad&quot;              &quot;Vranjska Banja&quot;           
+## [215] &quot;Žuč&quot;                       &quot;Samoš&quot;                    
+## [217] &quot;Resavica&quot;                  &quot;Gornja Toponica&quot;          
+## [219] &quot;Šušara&quot;                    &quot;Sijarinska Banja&quot;         
+## [221] &quot;Deliblato&quot;                 &quot;Osojane&quot;                  
+## [223] &quot;Borovac&quot;                   &quot;Bučumet&quot;                  
+## [225] &quot;Plandištе&quot;                 &quot;Opovo&quot;                    
+## [227] &quot;Novi Itebej&quot;               &quot;Ravna Banja&quot;              
+## [229] &quot;Velika Braina&quot;             &quot;Sopot&quot;                    
+## [231] &quot;Korbovo&quot;                   &quot;Tupale&quot;                   
+## [233] &quot;Sivac&quot;                     &quot;Čenta&quot;                    
+## [235] &quot;Banja Koviljača&quot;           &quot;Zubin Potok&quot;              
+## [237] &quot;Veternik&quot;                  &quot;Arilje&quot;                   
+## [239] &quot;Debrc&quot;                     &quot;Ariljе&quot;                   
+## [241] &quot;Novi Sadnovi Sad&quot;          &quot;Sremska Kamenica&quot;         
+## [243] &quot;Pančevo&quot;                   &quot;Gložan&quot;                   
+## [245] &quot;Selenča&quot;                   &quot;Kulpin&quot;                   
+## [247] &quot;Požarevac&quot;                 &quot;Mataruška Banja&quot;          
+## [249] &quot;Kragujevac&quot;                &quot;Lebane&quot;                   
+## [251] &quot;Varda&quot;                     &quot;Trstenik&quot;                 
+## [253] &quot;Novi Kneževac&quot;             &quot;Zablaće&quot;                  
+## [255] &quot;Aranđelovac&quot;               &quot;Majur&quot;                    
+## [257] &quot;Zabela&quot;                    &quot;Prokuplje&quot;                
+## [259] &quot;Grocka&quot;                    &quot;Plandište&quot;                
+## [261] &quot;Bački Petrovac&quot;            &quot;Ribare&quot;                   
+## [263] &quot;Donje Crniljevo&quot;           &quot;Majdanpek&quot;                
+## [265] &quot;Obrovac&quot;                   &quot;Laplje Selo&quot;              
+## [267] &quot;Žitište&quot;                   &quot;Mladenovac&quot;               
+## [269] &quot;Petrovac&quot;                  &quot;Istok&quot;                    
+## [271] &quot;Veliko Gradište&quot;           &quot;Barajevo&quot;                 
+## [273] &quot;Knjaževac&quot;                 &quot;Podvrška&quot;                 
+## [275] &quot;Prizren&quot;                   &quot;Donja Livadica&quot;           
+## [277] &quot;Miloševac&quot;                 &quot;Mokra Gora&quot;               
+## [279] &quot;Čoka&quot;                      &quot;Kljajićevo&quot;               
+## [281] &quot;Veliko Selo&quot;               &quot;Uzdin&quot;                    
+## [283] &quot;Novi Bečej&quot;                &quot;Čurug&quot;                    
+## [285] NA                          &quot;Karavukovo&quot;               
+## [287] &quot;Drmno&quot;                     &quot;Ćićevac&quot;                  
+## [289] &quot;Čajetina&quot;                  &quot;Banatski Brestovac&quot;       
+## [291] &quot;Laćarak&quot;                   &quot;Padinska Skela&quot;           
+## [293] &quot;Malo Crniće&quot;               &quot;Novo Orahovo&quot;             
+## [295] &quot;Novi Sadpančevo&quot;           &quot;Omoljica&quot;                 
+## [297] &quot;Begaljica&quot;                 &quot;Gajdobra&quot;                 
+## [299] &quot;Nova Gajdobr&quot;              &quot;Bešenovo&quot;                 
+## [301] &quot;Osečina&quot;                   &quot;Novi Sadsubotica&quot;         
+## [303] &quot;Đakovica&quot;                  &quot;Tara&quot;                     
+## [305] &quot;Obrež&quot;                     &quot;Niška Banja&quot;              
+## [307] &quot;Smedrevska Palanka&quot;        &quot;Perlez&quot;                   
+## [309] &quot;Novi Sadsremska Mitrovica&quot; &quot;Davidovac&quot;                
+## [311] &quot;Crepaja&quot;                   &quot;Mramorak&quot;                 
+## [313] &quot;Peć&quot;                       &quot;Dubovac&quot;                  
+## [315] &quot;Banatski Despotovac&quot;       &quot;Mala Ivanča&quot;              
+## [317] &quot;Ivanovo&quot;                   &quot;Kovilj&quot;                   
+## [319] &quot;Novi Sadbor&quot;               &quot;Tekija&quot;                   
+## [321] &quot;Novi Sadzrenjanin&quot;         &quot;Mokrin&quot;                   
+## [323] &quot;Rogača&quot;                    &quot;Podunavci&quot;                
+## [325] &quot;Novi Sadvršac&quot;             &quot;Draginje&quot;                 
+## [327] &quot;Bačko Gradište&quot;            &quot;Labane&quot;                   
+## [329] &quot;Skorenovac&quot;                &quot;Ražanj&quot;                   
+## [331] &quot;Veliko Ropotovo&quot;           &quot;Vučje&quot;                    
+## [333] &quot;Vučak&quot;                     &quot;Šimanovci&quot;                
+## [335] &quot;Pločnik&quot;                   &quot;Kanjiža&quot;                  
+## [337] &quot;Novi Sadvrbas&quot;             &quot;Prilužje&quot;                 
+## [339] &quot;Jovanovac&quot;                 &quot;Novi Sadsokobanja&quot;        
+## [341] &quot;Markovac&quot;                  &quot;Petrovčić&quot;                
+## [343] &quot;Banatski Karlovac&quot;         &quot;Veliki Mokri Lug&quot;         
+## [345] &quot;Koceljevo&quot;                 &quot;Štubik&quot;</code></pre>
+<p>Ok, all these seem to be Serbian cities. Inspect <code>BasicOfStarting</code>:</p>
 <pre class="r"><code>table(rawData$BasicOfStarting)</code></pre>
 <pre><code>## 
 ##                                   No data 
@@ -893,7 +1388,7 @@ table(rawData$DecisionDateGroup)</code></pre>
 <p>These entires are most probably not archived correctly; fix this:</p>
 <pre class="r"><code>rawData[which(grepl(&quot;^202&quot;, rawData$DecisionDateGroup)), ] &lt;- NA
 dim(rawData)</code></pre>
-<pre><code>## [1] 27472    17</code></pre>
+<pre><code>## [1] 27472    19</code></pre>
 <p>How does the data set looks now:</p>
 <pre class="r"><code>rawData$DecisionDateGroup &lt;- str_sub(rawData$DecisionDate, start = 1, end = 3)
 table(rawData$DecisionDateGroup, rawData$ArticalStatus, useNA = &quot;always&quot;)</code></pre>
@@ -987,10 +1482,14 @@ rawData[w1, ]</code></pre>
 ## 15237           &lt;NA&gt;          &lt;NA&gt;            &lt;NA&gt;   &lt;NA&gt;     &lt;NA&gt;    &lt;NA&gt;
 ## 17340           &lt;NA&gt;          &lt;NA&gt;            &lt;NA&gt;   &lt;NA&gt;     &lt;NA&gt;    &lt;NA&gt;
 ## 19725           &lt;NA&gt;          &lt;NA&gt;            &lt;NA&gt;   &lt;NA&gt;     &lt;NA&gt;    &lt;NA&gt;
-##       Domain DecisionDate OutcomeDate CreateDateGroup DecisionDateGroup
-## 15237   &lt;NA&gt;         &lt;NA&gt;        &lt;NA&gt;            &lt;NA&gt;              &lt;NA&gt;
-## 17340   &lt;NA&gt;         &lt;NA&gt;        &lt;NA&gt;            &lt;NA&gt;              &lt;NA&gt;
-## 19725   &lt;NA&gt;         &lt;NA&gt;        &lt;NA&gt;            &lt;NA&gt;              &lt;NA&gt;
+##       Domain DecisionDate OutcomeDate ApplicantCityOnly
+## 15237   &lt;NA&gt;         &lt;NA&gt;        &lt;NA&gt;              &lt;NA&gt;
+## 17340   &lt;NA&gt;         &lt;NA&gt;        &lt;NA&gt;              &lt;NA&gt;
+## 19725   &lt;NA&gt;         &lt;NA&gt;        &lt;NA&gt;              &lt;NA&gt;
+##       ApplicantCityForeign CreateDateGroup DecisionDateGroup
+## 15237                   NA            &lt;NA&gt;              &lt;NA&gt;
+## 17340                   NA            &lt;NA&gt;              &lt;NA&gt;
+## 19725                   NA            &lt;NA&gt;              &lt;NA&gt;
 ##       OutcomeDateGroup
 ## 15237             &lt;NA&gt;
 ## 17340             &lt;NA&gt;

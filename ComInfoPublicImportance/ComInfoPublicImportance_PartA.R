@@ -22,7 +22,7 @@
 #' 
 #' The notebook focuses on an exploratory analysis of the open data set on the *Complaints in the field of freedom of information*, provided at the [Open Data Portal of the Republic of Serbia](http://data.gov.rs/sr/) *that is currently under development*. The data set was kindly provided to the Open Data Portal by the [Commissioner for Information of Public Importance and Personal Data Protection](http://www.poverenik.rs/en.html) of the Republic of Serbia. Many more open data sets will be indexed and uploaded to the [Open Data Portal of the Republic of Serbia](http://data.gov.rs/sr/) in the forthcoming weeks and months. 
 #' 
-#' As of the data set: (a) no metadata were provided; (b) the translation of legal terms from Serbian to English is mine, meaning: a lot of Google Translate suggestions were used (I'm a psychologists, not a lawyer); (c) mixture of latin and cyrilic alphabet was detected in the data; (d) thorough cleaning takes place here, in Part A; exploratory analysis + data visualizations will be presented soon (Part B).
+#' As of the data set: (a) no metadata were provided; (b) the translation of legal terms from Serbian to English is mine, meaning: a lot of Google Translate suggestions were used (I'm a psychologists, not a lawyer or a legal expert); (c) mixture of latin and cyrilic alphabet was detected in the data; (d) thorough cleaning takes place here, in Part A; exploratory analysis + data visualizations will be presented soon (Part B).
 #' 
 #' ***
 #' 
@@ -57,7 +57,7 @@ rawData <- read.table(fileLoc,
 dim(rawData)
 
 #' 
-#' Take a sneak peek at the data set:
+#' There are 27518 row entires and 16 variables; Take a sneak peek at the data set:
 #' 
 ## ----echo = T------------------------------------------------------------
 glimpse(rawData)
@@ -65,11 +65,13 @@ glimpse(rawData)
 #' 
 #' ### Recoding: translate to English and check for consistency
 #' 
+#' The `Code` column is most probably the unique ID of the complaint; check for consistency:
+#' 
 ## ----echo = T------------------------------------------------------------
 sum(duplicated(rawData$Code))
 
 #' 
-#' There are 23 duplicated Code values (complaint IDs, presumeably); checking it out:
+#' There are 23 duplicated `Code` values (complaint IDs, presumeably); checking it out:
 #' 
 ## ----echo = T------------------------------------------------------------
 duplicatedCodes <- rawData$Code[which(duplicated(rawData$Code))]
@@ -96,6 +98,8 @@ inspectDuplicates$CreateDate
 rawData <- rawData[-which(rawData$Code %in% duplicatedCodes), ]
 dim(rawData)
 
+#' 
+#' We are now left with 27472 row entries in the table.
 #' 
 ## ----echo = T------------------------------------------------------------
 table(rawData$ArticalType)
@@ -155,7 +159,51 @@ sum(is.na(rawData$ApplicantCity))
 #' 
 ## ----echo = T------------------------------------------------------------
 rawData$ApplicantCity <- str_to_title(rawData$ApplicantCity)
+unique(sort(rawData$ApplicantCity))
 
+#' 
+#' Some complaints originate from foreign countries (e.g. `Zagreb, Hrvatska`, `Švedska`, `Sidnej`, `Kanada`, `Velika Britanija`, `Švajcarska`, `Beč, Austrija`, `Kopenhagen, Danska`, `Hrvatska`, etc.). Also, some entries are really duplicates as a consequence of presence of Serbian language-specific characters (e.g. `Aranđelovac` and `Arandjelovac`). We will attempt to organize the information from the `ApplicantCity` column in the following way:
+#' 
+#' + determine whether the `ApplicantCity` is in Serbia or not; introduce a new `logical` column `ApplicantCityForeign` (`TRUE` for cities outside of Serbia, `FALSE` otherwise);
+#' + determine whether the entry in the `ApplicantCity` column contains (a) only the name of applicant's city, or (b) a combination of city and country names (e.g. `Beč, Austrija`); introduce a new column `ApplicantCityOnly` as `character` where `City` stands for city only information, `CountryAndCity` for a combination of city and country name, and `Country` for the presence of a country name only.
+#' 
+#' These tasks will be carried out manually, by inspecting all distinct row entries in the `ApplicantCity` column one by one. One assumption can be made: where `,` is present in the `ApplicantCity` column, it most probably separates a city and a country name, indicating `TRUE` in the `ApplicantCityForeign` column and `FALSE` in the `ApplicantCityOnly` column.
+#' 
+## ----echo = T------------------------------------------------------------
+commaEntries <- which(grepl(",", rawData$ApplicantCity))
+unique(rawData$ApplicantCity[commaEntries])
+
+#' 
+#' All these entries are foreign cities.
+#' 
+## ----echo = T------------------------------------------------------------
+# - fix typos and unsystematic errors:
+rawData$ApplicantCity[which(grepl("Pančevo|Pančеvo", rawData$ApplicantCity))] <- "Pančevo"
+rawData$ApplicantCity[which(grepl("Beč Austrija", rawData$ApplicantCity, fixed = T))] <- "Beč, Austrija"
+rawData$ApplicantCity[which(grepl("Bosna I Hercegovina", rawData$ApplicantCity, fixed = T))] <- "Bosna i Hercegovina"
+rawData$ApplicantCity[which(grepl("Florida Usa", rawData$ApplicantCity, fixed = T))] <- "Florida, USA"
+rawData$ApplicantCity[which(grepl("Strasswalcen/Austija", rawData$ApplicantCity, fixed = T))] <- "Strasswalcen, Austrija"
+rawData$ApplicantCity[which(grepl("Gornij Milanovac", rawData$ApplicantCity, fixed = T))] <- "Gornji Milanovac"
+rawData$ApplicantCity[which(grepl("Arandjelovac", rawData$ApplicantCity, fixed = T))] <- "Aranđelovac"
+# - introduce rawData$ApplicantCityOnly and rawData$ApplicantCityForeign fields:
+rawData$ApplicantCityOnly <- rep("City", dim(rawData)[1])
+rawData$ApplicantCityOnly[commaEntries] <- 'CountryAndCity'
+countriesFound <- c('Brazil', 'Britanska Devičanska Ostrva', 'Hrvatska', 'Kanada', 'Makedonija', 'Poljska', 'Republika Ekvador', 'Švajcarska', 'Švedska', 'Velika Britanija')
+foreignCitiesFound <- c('Beč', 'Brčko', 'Budimpešta', 'Ljubljana' , 'Mostar', 'Sidnej')
+foreignCities <- unlist(lapply(foreignCitiesFound, function(x) {
+  which(grepl(x, rawData$ApplicantCity, fixed = T))}))
+rawData$ApplicantCityForeign <- rep(F, dim(rawData)[1])
+rawData$ApplicantCityForeign[commaEntries] <- T
+rawData$ApplicantCityForeign[foreignCities] <- T
+foreignCountries <- unlist(lapply(countriesFound, function(x) {
+  which(grepl(x, rawData$ApplicantCity, fixed = T))}))
+rawData$ApplicantCityForeign[foreignCountries] <- T
+rawData$ApplicantCityOnly[foreignCountries] <- 'Country'
+rawData$ApplicantCityOnly[which(grepl("No Data", rawData$ApplicantCityOnly))] <- NA
+table(rawData$ApplicantCityOnly, rawData$ApplicantCityForeign)
+
+#' 
+#' **Hopefully**, these operations have removed all potential confusions and errors from the `ApplicantCity` column.
 #' 
 ## ----echo = T------------------------------------------------------------
 table(rawData$ArticalStatus)
@@ -236,13 +284,14 @@ rawData$AuthorityCity[rawData$AuthorityCity == 'Nepoznat'] <- NA
 sum(is.na(rawData$AuthorityCity))
 
 #' 
-#' Fix city names in `AuthorityCity`:
+#' Fix city names in `AuthorityCity` and check:
 #' 
 ## ----echo = T------------------------------------------------------------
 rawData$AuthorityCity <- str_to_title(rawData$AuthorityCity)
+unique(rawData$AuthorityCity)
 
 #' 
-#' Inspect `BasicOfStarting`:
+#' Ok, all these seem to be Serbian cities. Inspect `BasicOfStarting`:
 #' 
 ## ----echo = T------------------------------------------------------------
 table(rawData$BasicOfStarting)
