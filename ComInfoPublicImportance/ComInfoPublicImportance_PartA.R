@@ -275,6 +275,7 @@ table(rawData$AuthorityGroup)
 #' Inspect `AuthorityCity`:
 #' 
 ## ----echo = T------------------------------------------------------------
+rawData$AuthorityGroup[rawData$AuthorityGroup == 'No data'] <- NA
 length(unique((rawData$AuthorityCity)))
 
 #' 
@@ -283,6 +284,7 @@ length(unique((rawData$AuthorityCity)))
 ## ----echo = T------------------------------------------------------------
 rawData$AuthorityCity[rawData$AuthorityCity == 'Nepoznat'] <- NA
 sum(is.na(rawData$AuthorityCity))
+rawData$AuthorityCity[rawData$AuthorityCity == 'No data'] <- NA
 
 #' 
 #' Fix city names in `AuthorityCity` and check:
@@ -624,7 +626,7 @@ w
 #' Save the working data set:
 #' 
 ## ----echo =  T-----------------------------------------------------------
-write.csv(rawData, file = "Complaints_FreedomOfInformation.csv")
+write.table(rawData, file = "Complaints_FreedomOfInformation.csv", sep = "\t")
 
 #' 
 #' 

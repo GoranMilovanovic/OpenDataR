@@ -1,0 +1,365 @@
+# Open Data Notebooks 2017-02B :: ODN2017-02B
+## Case Study: Commissioner for Information of Public Importance and Personal Data Protection, Republic of Serbia: "Complaints in The Field of Freedom of Information" Data Set
+### Part B: Exploratory Analysis + Visualizations
+
+***
+
+#### Data Set: zalbepristup.csv
+#### Source: [data.gov.rs](http://data.gov.rs)
+#### Accessed on 05 Feb 2017 from [data.gov.rs/sr/datasets/](http://data.gov.rs/sr/datasets/zalbe-iz-oblasti-prava-na-pristup-informacijama/)
+#### Description: Complaints in The Field of Freedom of Information
+
+*** 
+![](../img/GoranSMilovanovic.jpg)
+
+**Author:** [Goran S. Milovanovic](http//www.exactness.net), [Data Science Serbia](http//www.datascience.rs)
+
+**Notebook:** 02/12/2017, Belgrade, Serbia
+
+![](../img/DataScienceSerbia_Logo.png)
+
+***
+
+The notebook focuses on an exploratory analysis of the open data set on the *Complaints in the field of freedom of information*, provided at the [Open Data Portal of the Republic of Serbia](http://data.gov.rs/sr/) *that is currently under development*. The data set was kindly provided to the Open Data Portal by the [Commissioner for Information of Public Importance and Personal Data Protection](http://www.poverenik.rs/en.html) of the Republic of Serbia. Many more open data sets will be indexed and uploaded to the [Open Data Portal of the Republic of Serbia](http://data.gov.rs/sr/) in the forthcoming weeks and months. 
+
+As of the data set: (a) no metadata were provided; (b) the translation of legal terms from Serbian to English is mine, meaning: a lot of Google Translate suggestions were used (I'm a psychologists, not a lawyer or a legal expert); (c) mixture of latin and cyrilic alphabet was detected in the data; (d) thorough cleaning takes place here, in Part A; exploratory analysis + data visualizations are providede here (Part B).
+
+***
+
+**Disclaimer.** The [Open Data Portal of the Republic of Serbia](http://data.gov.rs/sr/) is a young initiative that is currently under development. Neither the owner of this GitHub account as an individual, or [Data Science Serbia](http//www.datascience.rs) as an organization, hold any responsibility for the changes in the URLs of the data sets, or the changes in the content of the data sets published on  the [Open Data Portal of the Republic of Serbia](http://data.gov.rs/sr/). The results of the exploratory analyses and statistical models that are presented on this GitHub account are developed for illustrative purposes only, having in mind the goal of popularization of Open Data exclusively. The owner of this GitHub account strongly advises to consult him (e-mail: [goran.s.milovanovic@gmail.com](mailto:goran.s.milovanovic@gmail.com) and [Data Science Serbia](http//www.datascience.rs) before using the results presented here in public debate or media, and/or for any purposes other than motivating the usage and development of Open Data.  
+
+***
+
+### 1. Setup
+
+Load libraries + raw data:
+
+``` {r echo = T, message = F}
+rm(list = ls())
+library(dplyr)
+library(tidyr)
+library(knitr)
+library(ggplot2)
+library(igraph)
+
+### --- Working Directory
+wDir <- '../ComInfoPublicImportance'
+setwd(wDir)
+
+### --- Load Raw Data Set
+fileLoc <- 'Complaints_FreedomOfInformation.csv'
+dataSet <- read.table(fileLoc,
+                      header = T,
+                      check.names = F,
+                      row.names = 1,
+                      stringsAsFactors = F,
+                      sep = "\t") 
+
+### --- Inspect Data Set
+dim(dataSet)
+```
+
+There are 27469 rows and 17 variables in the data set.
+
+First, we take a look at the number of complaints filed across months 2005 - 2017:
+
+``` {r echo = T}
+dataSet$YM <- unlist(lapply(dataSet$CreateDate, function(x) {
+  compDate <- strsplit(x, split = '-', fixed = T)[[1]]
+  paste(compDate[1], compDate[2], sep = "-")
+}))
+countComplaints <- dataSet %>%
+  group_by(YM) %>%
+  count()
+dim(countComplaints)[1]
+```
+
+``` {r echo = T}
+countComplaints$ordinal <- seq(1:length(countComplaints$YM))
+index <- c(1, seq(4, 136, 4), 139)
+ggplot(countComplaints, aes(x = ordinal, y = n)) +
+  geom_point(size = 1.5, color = 'Blue') +
+  geom_point(size = 1, color = 'White') +
+  geom_smooth(size = .25, color = 'Blue', alpha = .25) + 
+  ylab("Complaints Filed") + xlab("Year-Month") +
+  scale_x_continuous(breaks = index,
+                      labels = countComplaints$YM[index]) + 
+  ggtitle("Number of Complaints Filed\nJuly 2005 - January 2017") +
+  theme_bw() +
+  theme(axis.text.x = element_text(angle = 90, size = 7)) +
+  theme(plot.title  = element_text(size = 11))
+  
+```
+
+There's one huge outlier (number of complaints close or at 600); when did this happen:
+
+``` {r echo = T}
+countComplaints$YM[which.max(countComplaints$n)]
+```
+
+And how many complaints exactly where filed in April 2013:
+
+``` {r echo = T}
+countComplaints$n[which.max(countComplaints$n)]
+```
+
+How did the different applicant groups complained 2005 - 2017?
+
+``` {r echo = T, results = 'asis'}
+dataSet$Year <- unlist(lapply(dataSet$CreateDate, function(x) {
+  compDate <- strsplit(x, split = '-', fixed = T)[[1]][1]
+}))
+applicantGroups <- dataSet %>% 
+  group_by(ApplicantGroup, Year) %>%
+  arrange(ApplicantGroup) %>% 
+  count()
+kable(head(applicantGroups))
+```
+
+Keep only those applicant groups w. data for all years 2005 - 2016:
+
+``` {r echo = T}
+tGroups <- as.data.frame(
+  table(applicantGroups$ApplicantGroup, 
+        applicantGroups$Year)) %>% 
+  spread(key = Var2,
+         value = Freq)
+wGroups <- unname(which(rowSums(tGroups[,2:ncol(tGroups)]) == ncol(tGroups)-1))
+wGroups <- as.character(tGroups$Var1[wGroups])
+wGroups
+```
+
+``` {r echo = T}
+applicantGroups$Year <- as.integer(applicantGroups$Year)
+applicantGroups <- applicantGroups %>% 
+  filter(ApplicantGroup %in% wGroups, Year %in% seq(2005,2016))
+ggplot(applicantGroups, aes(x = Year, y = n, color = ApplicantGroup)) +
+  geom_point(size = 1) +
+  geom_smooth(size = .25, alpha = .25) +
+  facet_wrap(~ ApplicantGroup, scales = "free_y") + 
+  ylab("Number of Complaints") +
+  ggtitle("Number of Complaints Filed per Applicant Group\n2005 - 2016") +
+  theme_bw() +
+  theme(axis.text.x = element_text(angle = 90, size = 7)) +
+  theme(plot.title  = element_text(size = 11)) +
+  theme(legend.position="none") + 
+  theme(strip.background = element_rect(color = "White", fill = "White")) +
+  theme(panel.grid = element_blank())
+```
+
+
+And what where the targeted authority groups in complaints 2005 - 2016? We will present the results for only those authority groups for which we have data for at least five years (2005 - 2016):
+
+``` {r echo = T, message = F}
+authorityGroups <- dataSet %>% 
+  group_by(AuthorityGroup, Year) %>%
+  arrange(AuthorityGroup) %>% 
+  count()
+authorityGroups$Year <- as.integer(authorityGroups$Year)
+tGroups <- as.data.frame(
+  table(authorityGroups$AuthorityGroup, 
+        authorityGroups$Year)) %>% 
+  spread(key = Var2,
+         value = Freq)
+wGroups <- unname(which(rowSums(tGroups[,2:(ncol(tGroups)-1)]) >= 5))
+wGroups <- unique(as.character(tGroups$Var1[wGroups]))
+authorityGroups <- authorityGroups %>% 
+  filter(AuthorityGroup %in% wGroups, Year %in% seq(2005,2016))
+ggplot(authorityGroups, aes(x = Year, y = n, color = AuthorityGroup)) +
+  geom_point(size = 1) +
+  geom_smooth(size = .25, alpha = .25) +
+  facet_wrap(~ AuthorityGroup, ncol = 3, scales = "free_y") + 
+  ylab("Number of Complaints") + 
+  ggtitle("Number of Complaints Filed per Authority Group\n2005 - 2016") +
+  theme_bw() +
+  theme(axis.text.x = element_text(angle = 90, size = 7)) +
+  theme(plot.title  = element_text(size = 11)) +
+  theme(legend.position="none") + 
+  theme(strip.background = element_rect(color = "White", fill = "White")) +
+  theme(strip.text = element_text(size = 8)) +
+  theme(panel.grid = element_blank())
+```
+
+There are no data for Public Companies, Republic Agencies, and Local Self-Government Agencies after 2014. At this point, we do not now (a) whether there were no complaints against these three groups of authorities, or (b) the data are not yet entered to the database, or (c) the Commissioner for Information of Public Importance and Personal Data Protection started a separate database for these and similar groups of authorities. Once again, the Open Data initiative in Serbia is very young, and we do not expect the currently available open data sets at [data.gov.rs](data.gov.rs) to be complete or perfectly consistent at this point.
+
+What is the structure of the number of complaints in respect to the (a) type of applicant and (b) type of authority to whom the complaint refers to? We will retain only data from applicant and authority groups with 300 or more complaints filed by or against, respectively:
+
+``` {r echo = T}
+appGroup <- dataSet %>%  
+  group_by(ApplicantGroup) %>%
+  count()
+appGroup <- appGroup[appGroup$n >= 300, ]
+appGroup <- as.character(appGroup$ApplicantGroup)
+autGroup <- dataSet %>%  
+  group_by(AuthorityGroup) %>%
+  count()
+autGroup <- autGroup[autGroup$n >= 300, ]
+autGroup <- as.character(autGroup$AuthorityGroup)
+appAut <- dataSet %>%
+  filter(ApplicantGroup %in% appGroup, AuthorityGroup %in% autGroup) %>% 
+  select(ApplicantGroup, AuthorityGroup) %>% 
+  group_by(ApplicantGroup, AuthorityGroup) %>%
+  summarise(n = n()) %>%
+  group_by(ApplicantGroup) %>%
+  mutate(percentage = (n/sum(n))*100) %>% 
+  arrange(ApplicantGroup, desc(n))
+ggplot(appAut, aes(x = AuthorityGroup, y = percentage, fill = AuthorityGroup)) +
+  geom_bar(stat = "identity", position = "stack") +
+  # coord_polar(theta = "y", start = 0, direction = 1) +
+  facet_wrap(~ ApplicantGroup, ncol = 2) + 
+  ylab("Complaints(%)\n") + xlab("") +
+  ggtitle("Applicant Group vs. Authority Group\n2005 - 2017") +
+  theme_bw() +
+  theme(axis.text.y = element_text(angle = 90, size = 7)) +
+  theme(axis.title.y = element_text(size = 11)) +
+  theme(axis.text.x = element_blank()) +
+  theme(plot.title  = element_text(size = 11)) +
+  # theme(legend.position="none") +
+  theme(strip.background = element_rect(color = "White", fill = "White")) +
+  theme(strip.text = element_text(size = 8)) +
+  theme(panel.grid = element_blank()) +
+  theme(legend.key = element_blank()) +
+  theme(legend.text = element_text(size = 8)) +
+  theme(legend.title = element_text(size = 10))
+```
+
+In the following graph, each applicant group points towards the top three authority groups in respect to which it has sent the maximum numbers of complaints to the Commissioner for Information of Public Importance and Personal Data Protection (applicant groups represented by blue and authority groups by red circles):
+
+``` {r echo = T, message = F}
+appStruct <- appAut %>% 
+  top_n(3)
+appStruct <- appStruct %>% 
+  select(ApplicantGroup, AuthorityGroup)
+# - plot w. {igraph}
+applicantsNet <- graph.data.frame(appStruct, directed=T)
+V(applicantsNet)$color <- c(rep("deepskyblue", 8), rep("coral", 7))
+par(mai=c(rep(0,4)))
+plot(applicantsNet,
+     vertex.size = 20,
+     vertex.shape = "circle",
+     # vertex.color = "deepskyblue",
+     vertex.frame.color = "grey",
+     vertex.label.color = "black",
+     vertex.label.font = 1,
+     vertex.label.family = "sans",
+     vertex.label.cex = .55,
+     edge.width = .75,
+     edge.color = "grey",
+     edge.arrow.size = 0.5,
+     vertex.label.dist = .35, 
+     edge.curved = 0.15,
+     margin = c(rep(0,4)))
+```
+
+Check out the distribution of complaints filed on behalf of various applicant groups in the respect to the domain of the complaint (based on categories w. 50 or more complaints; applicant groups represented by blue and domains by gold circles):
+
+``` {r echo = T}
+domainStruct <- dataSet %>% 
+  select(ApplicantGroup, Domain) %>% 
+  group_by(ApplicantGroup, Domain) %>%
+  count()
+domainStruct <- domainStruct[complete.cases(domainStruct), ]
+domainStruct <- domainStruct %>% 
+  filter(n > 50, !(ApplicantGroup == "Other")) %>%
+  select(ApplicantGroup, Domain)
+# - plot w. {igraph}
+domainsNet <- graph.data.frame(domainStruct, directed=T)
+domains <- unique(dataSet$Domain)
+applicants <- unique(dataSet$ApplicantGroup)
+dColors <- character(length(V(domainsNet)))
+dColors[which(as.character(V(domainsNet)$name) %in% applicants)] <- "Deepskyblue"
+dColors[which(as.character(V(domainsNet)$name) %in% domains)] <- "Gold"
+V(domainsNet)$color <- dColors
+par(mai=c(rep(0,4)))
+plot(domainsNet,
+     vertex.size = 20,
+     vertex.shape = "circle",
+     vertex.label.color = "black",
+     vertex.label.font = 1,
+     vertex.label.family = "sans",
+     vertex.label.cex = .55,
+     edge.width = .75,
+     edge.color = "grey",
+     edge.arrow.size = 0.5,
+     vertex.label.dist = .35, 
+     edge.curved = 0.25,
+     margin = c(rep(0,4)))
+
+```
+
+The distribution of the number of complaints sent in daily w. `{ggplot2} geom_histogram()`:
+
+```{r echo = T}
+compDaily <- dataSet %>%
+  group_by(CreateDate) %>% 
+  count() %>% 
+  arrange(desc(n))
+colnames(compDaily)[2] <- 'Frequency'
+compDaily$Rank <- seq(1:dim(compDaily)[1])
+ggplot(compDaily, aes(x = Frequency)) + 
+  geom_histogram(fill = "Darkblue", bins = 400) +
+  ggtitle("No. of Complaints Daily") + 
+  xlab("Daily Intake of Complaints") + ylab("Frequency") +
+  theme_bw() +
+  theme(axis.text.x = element_text(size = 7)) +
+  theme(plot.title  = element_text(size = 11))
+```
+
+Approximately 10 complaints are sent in daily on the average:
+
+``` {r echo = T}
+mean(compDaily$Frequency)
+```
+
+The `CreateDate` column (probably; no metadata or documentation are yet provided for this data set) refers to the database entry date for particular complaints. The `DecisionDate` column is certainly related to the end of the process on behalf of the Commissioner for Information of Public Importance and Personal Data Protection. Where the time difference between the two (`DecisionDate` - `CreateDate`) is positive, we know that the entry to the database was made before the decision upon it was made; when negative, we know that we have a complaint that was entered to the database only following the decision made upon it; obviously, zero time difference means that the complaint was enterted to the database on the very same day when deciding upon it was completed.
+
+``` {r echo = T}
+dataSet$StartDate <- as.Date(dataSet$CreateDate)
+dataSet$EndDate <- as.Date(dataSet$DecisionDate)
+dataSet$SEDiff <- as.numeric(dataSet$EndDate - dataSet$StartDate)
+decPlotFrame <- dataSet %>%
+  select(StartDate, EndDate, SEDiff)
+decPlotFrame <- decPlotFrame[complete.cases(decPlotFrame), ]
+ggplot(decPlotFrame, aes(x = SEDiff)) + 
+  geom_histogram(bins = 400, color = "Firebrick") +
+  ggtitle("DecisionDate - CreateDate") + 
+  xlab("Days") + ylab("Frequency") +
+  theme_bw() +
+  theme(axis.text.x = element_text(size = 7)) +
+  theme(plot.title  = element_text(size = 11)) +
+  theme(legend.position = "None")
+```
+
+``` {r echo = T}
+createdBeforeDecision <- 
+  paste0(round(((sum(decPlotFrame$SEDiff>0))/length(decPlotFrame$SEDiff))*100, 2),
+         "%")
+createdBeforeDecision
+```
+
+``` {r echo = T}
+createdAfterDecision <- 
+  paste0(round(((sum(decPlotFrame$SEDiff<0))/length(decPlotFrame$SEDiff))*100, 2),
+         "%")
+createdAfterDecision
+```
+
+``` {r echo = T}
+createdOnDecision <- 
+  paste0(round(((sum(decPlotFrame$SEDiff==0))/length(decPlotFrame$SEDiff))*100, 2),
+         "%")
+createdOnDecision
+```
+
+Approximately 3/4 of complaints were entered to the database *before* the onset of the respective decision; only a minority of complaints were entered on the same date when the decision was reached. We hypothesize that this is a consequence of a late start of the digitization processes in respect to the foundation of the institution of the Commissioner for Information of Public Importance and Personal Data Protection of the Republic of Serbia.
+
+
+
+
+*** 
+
+[Goran S. Milovanovic](http//www.exactness.net), [Data Science Serbia](http//www.datascience.rs), 02/12/2017, Belgrade, Serbia
+
+![](../img/DataScienceSerbia_Logo.png)
+
+***

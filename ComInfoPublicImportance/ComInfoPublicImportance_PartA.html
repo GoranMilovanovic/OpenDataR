@@ -831,12 +831,14 @@ percents</code></pre>
 ##                                                          Sport Orgs 
 ##                                                                  46</code></pre>
 <p>Inspect <code>AuthorityCity</code>:</p>
-<pre class="r"><code>length(unique((rawData$AuthorityCity)))</code></pre>
+<pre class="r"><code>rawData$AuthorityGroup[rawData$AuthorityGroup == 'No data'] &lt;- NA
+length(unique((rawData$AuthorityCity)))</code></pre>
 <pre><code>## [1] 350</code></pre>
 <p>Recode <code>Nepoznat</code> (<code>Unknown</code> in English) from <code>AuthorityCity</code> to <code>NA</code>:</p>
 <pre class="r"><code>rawData$AuthorityCity[rawData$AuthorityCity == 'Nepoznat'] &lt;- NA
 sum(is.na(rawData$AuthorityCity))</code></pre>
 <pre><code>## [1] 1</code></pre>
+<pre class="r"><code>rawData$AuthorityCity[rawData$AuthorityCity == 'No data'] &lt;- NA</code></pre>
 <p>Fix city names in <code>AuthorityCity</code> and check:</p>
 <pre class="r"><code>rawData$AuthorityCity &lt;- str_to_title(rawData$AuthorityCity)
 unique(rawData$AuthorityCity)</code></pre>
@@ -898,7 +900,7 @@ unique(rawData$AuthorityCity)</code></pre>
 ## [111] &quot;Trstеnik&quot;                  &quot;Zvečan&quot;                   
 ## [113] &quot;Stara Pazova&quot;              &quot;Bela Palanka&quot;             
 ## [115] &quot;Umka&quot;                      &quot;Kruševac&quot;                 
-## [117] &quot;Žabalj&quot;                    &quot;No Data&quot;                  
+## [117] &quot;Žabalj&quot;                    NA                         
 ## [119] &quot;Nova Varoš&quot;                &quot;Užice&quot;                    
 ## [121] &quot;Pambukovica&quot;               &quot;Lapovo&quot;                   
 ## [123] &quot;Sečanj&quot;                    &quot;Gadžin Han&quot;               
@@ -982,37 +984,37 @@ unique(rawData$AuthorityCity)</code></pre>
 ## [279] &quot;Čoka&quot;                      &quot;Kljajićevo&quot;               
 ## [281] &quot;Veliko Selo&quot;               &quot;Uzdin&quot;                    
 ## [283] &quot;Novi Bečej&quot;                &quot;Čurug&quot;                    
-## [285] NA                          &quot;Karavukovo&quot;               
-## [287] &quot;Drmno&quot;                     &quot;Ćićevac&quot;                  
-## [289] &quot;Čajetina&quot;                  &quot;Banatski Brestovac&quot;       
-## [291] &quot;Laćarak&quot;                   &quot;Padinska Skela&quot;           
-## [293] &quot;Malo Crniće&quot;               &quot;Novo Orahovo&quot;             
-## [295] &quot;Novi Sadpančevo&quot;           &quot;Omoljica&quot;                 
-## [297] &quot;Begaljica&quot;                 &quot;Gajdobra&quot;                 
-## [299] &quot;Nova Gajdobr&quot;              &quot;Bešenovo&quot;                 
-## [301] &quot;Osečina&quot;                   &quot;Novi Sadsubotica&quot;         
-## [303] &quot;Đakovica&quot;                  &quot;Tara&quot;                     
-## [305] &quot;Obrež&quot;                     &quot;Niška Banja&quot;              
-## [307] &quot;Smedrevska Palanka&quot;        &quot;Perlez&quot;                   
-## [309] &quot;Novi Sadsremska Mitrovica&quot; &quot;Davidovac&quot;                
-## [311] &quot;Crepaja&quot;                   &quot;Mramorak&quot;                 
-## [313] &quot;Peć&quot;                       &quot;Dubovac&quot;                  
-## [315] &quot;Banatski Despotovac&quot;       &quot;Mala Ivanča&quot;              
-## [317] &quot;Ivanovo&quot;                   &quot;Kovilj&quot;                   
-## [319] &quot;Novi Sadbor&quot;               &quot;Tekija&quot;                   
-## [321] &quot;Novi Sadzrenjanin&quot;         &quot;Mokrin&quot;                   
-## [323] &quot;Rogača&quot;                    &quot;Podunavci&quot;                
-## [325] &quot;Novi Sadvršac&quot;             &quot;Draginje&quot;                 
-## [327] &quot;Bačko Gradište&quot;            &quot;Labane&quot;                   
-## [329] &quot;Skorenovac&quot;                &quot;Ražanj&quot;                   
-## [331] &quot;Veliko Ropotovo&quot;           &quot;Vučje&quot;                    
-## [333] &quot;Vučak&quot;                     &quot;Šimanovci&quot;                
-## [335] &quot;Pločnik&quot;                   &quot;Kanjiža&quot;                  
-## [337] &quot;Novi Sadvrbas&quot;             &quot;Prilužje&quot;                 
-## [339] &quot;Jovanovac&quot;                 &quot;Novi Sadsokobanja&quot;        
-## [341] &quot;Markovac&quot;                  &quot;Petrovčić&quot;                
-## [343] &quot;Banatski Karlovac&quot;         &quot;Veliki Mokri Lug&quot;         
-## [345] &quot;Koceljevo&quot;                 &quot;Štubik&quot;</code></pre>
+## [285] &quot;Karavukovo&quot;                &quot;Drmno&quot;                    
+## [287] &quot;Ćićevac&quot;                   &quot;Čajetina&quot;                 
+## [289] &quot;Banatski Brestovac&quot;        &quot;Laćarak&quot;                  
+## [291] &quot;Padinska Skela&quot;            &quot;Malo Crniće&quot;              
+## [293] &quot;Novo Orahovo&quot;              &quot;Novi Sadpančevo&quot;          
+## [295] &quot;Omoljica&quot;                  &quot;Begaljica&quot;                
+## [297] &quot;Gajdobra&quot;                  &quot;Nova Gajdobr&quot;             
+## [299] &quot;Bešenovo&quot;                  &quot;Osečina&quot;                  
+## [301] &quot;Novi Sadsubotica&quot;          &quot;Đakovica&quot;                 
+## [303] &quot;Tara&quot;                      &quot;Obrež&quot;                    
+## [305] &quot;Niška Banja&quot;               &quot;Smedrevska Palanka&quot;       
+## [307] &quot;Perlez&quot;                    &quot;Novi Sadsremska Mitrovica&quot;
+## [309] &quot;Davidovac&quot;                 &quot;Crepaja&quot;                  
+## [311] &quot;Mramorak&quot;                  &quot;Peć&quot;                      
+## [313] &quot;Dubovac&quot;                   &quot;Banatski Despotovac&quot;      
+## [315] &quot;Mala Ivanča&quot;               &quot;Ivanovo&quot;                  
+## [317] &quot;Kovilj&quot;                    &quot;Novi Sadbor&quot;              
+## [319] &quot;Tekija&quot;                    &quot;Novi Sadzrenjanin&quot;        
+## [321] &quot;Mokrin&quot;                    &quot;Rogača&quot;                   
+## [323] &quot;Podunavci&quot;                 &quot;Novi Sadvršac&quot;            
+## [325] &quot;Draginje&quot;                  &quot;Bačko Gradište&quot;           
+## [327] &quot;Labane&quot;                    &quot;Skorenovac&quot;               
+## [329] &quot;Ražanj&quot;                    &quot;Veliko Ropotovo&quot;          
+## [331] &quot;Vučje&quot;                     &quot;Vučak&quot;                    
+## [333] &quot;Šimanovci&quot;                 &quot;Pločnik&quot;                  
+## [335] &quot;Kanjiža&quot;                   &quot;Novi Sadvrbas&quot;            
+## [337] &quot;Prilužje&quot;                  &quot;Jovanovac&quot;                
+## [339] &quot;Novi Sadsokobanja&quot;         &quot;Markovac&quot;                 
+## [341] &quot;Petrovčić&quot;                 &quot;Banatski Karlovac&quot;        
+## [343] &quot;Veliki Mokri Lug&quot;          &quot;Koceljevo&quot;                
+## [345] &quot;Štubik&quot;</code></pre>
 <p>Ok, all these seem to be Serbian cities. Inspect <code>BasicOfStarting</code>:</p>
 <pre class="r"><code>table(rawData$BasicOfStarting)</code></pre>
 <pre><code>## 
@@ -1506,7 +1508,7 @@ rawData[w1, ]</code></pre>
 w</code></pre>
 <pre><code>## named integer(0)</code></pre>
 <p>Save the working data set:</p>
-<pre class="r"><code>write.csv(rawData, file = &quot;Complaints_FreedomOfInformation.csv&quot;)</code></pre>
+<pre class="r"><code>write.table(rawData, file = &quot;Complaints_FreedomOfInformation.csv&quot;, sep = &quot;\t&quot;)</code></pre>
 <hr />
 <p><a href="http//www.exactness.net">Goran S. Milovanovic</a>, <a href="http//www.datascience.rs">Data Science Serbia</a>, 02/05/2017, Belgrade, Serbia</p>
 <div class="figure">
