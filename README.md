@@ -17,6 +17,8 @@ Log:
 + 30 Jan 2017. First case study added: Traffic Accidents in Belgrade 2015. (ODN2017-01)
 + 30 Jan 2017. Open Data R Meetup, Data Science Serbia, Startit Centre Belgrade, Savska 5, 18h.
 + 05 Feb 2017. Second case study, Part A, added: Commissioner for Information of Public Importance and Personal Data Protection, Republic of Serbia: "Complaints in The Field of Freedom of Information" Data Set
++ 12 Feb 2017. Second case study, Part B, added: Commissioner for Information of Public Importance and Personal Data Protection, Republic of Serbia: "Complaints in The Field of Freedom of Information" Data Set
+
 
 ***
 
